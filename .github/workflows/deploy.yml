@@ -1,4 +1,4 @@
-name: Deploy HTML to GitHub Pages
+name: Minogami daily report
 
 on:
   schedule:
