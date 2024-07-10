@@ -17,7 +17,7 @@ credentials = {
     "type": "service_account",
     "project_id": str(os.environ['PROJECT_ID']),
     "private_key_id": str(os.environ['PRIVATE_KEY_ID']),
-    "private_key": str(os.environ['PRIVATE_KEY']),
+    "private_key": str(os.environ['PRIVATE_KEY']).replace('\\n', '\n'),
     "client_email": str(os.environ['CLIENT_EMAIL']),
     "client_id": str(os.environ['CLIENT_ID']),
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
