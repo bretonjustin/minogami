@@ -30,7 +30,7 @@ credentials = {
 
 def read_rivers() -> list:
     rivers = []
-    with open('rivers.csv', 'r') as csvfile:
+    with open('rivers.csv', 'r', encoding="ISO-8859-1") as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
             rivers.append(row)
