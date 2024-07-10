@@ -32,5 +32,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt 
 
-    - name: Run Python Script to Generate HTML
+    - name: Run Python Script to export daily report
       run: python -u minogami.py
