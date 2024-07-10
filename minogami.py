@@ -8,7 +8,7 @@ import pytz
 import gspread
 
 INDEX_STATION_CEHQ = 7
-INDEX_STATION_VIGILANCE = 8
+INDEX_STATION_VIGILANCE = 9
 
 CEHQ_BASE_LINK = "https://www.cehq.gouv.qc.ca/depot/suivihydro/bd/JSON/"
 VIGILANCE_BASE_LINK = "https://inedit-ro.geo.msp.gouv.qc.ca/station_details_readings_api?id=eq."
@@ -27,6 +27,8 @@ credentials = {
     "universe_domain": "googleapis.com"
 }
 
+csv_header = []
+
 
 def read_rivers() -> list:
     rivers = []
@@ -34,6 +36,9 @@ def read_rivers() -> list:
         reader = csv.reader(csvfile)
         for row in reader:
             rivers.append(row)
+
+    global csv_header
+    csv_header = rivers[0]
 
     # remove header
     rivers.pop(0)
@@ -129,6 +134,8 @@ def fetch_vigilance(station: int) -> list:
 
 
 def fetch_river(rivers: list) -> list:
+    global csv_header
+
     for river in rivers:
         station_cehq = river[INDEX_STATION_CEHQ]
         station_vigilance = river[INDEX_STATION_VIGILANCE]
@@ -149,8 +156,21 @@ def fetch_river(rivers: list) -> list:
             river.append(str(previsions_cehq[3]))
             river.append(str(previsions_vigilance[3]))
 
+            csv_header.append("CEHQ Debit Actuel")
+            csv_header.append("Vigilance Debit Actuel")
+
+            csv_header.append("CEHQ Debit 24h")
+            csv_header.append("Vigilance Debit 24h")
+
+            csv_header.append("CEHQ Debit 48h")
+            csv_header.append("Vigilance Debit 48h")
+
+            csv_header.append("CEHQ Debit 72h")
+            csv_header.append("Vigilance Debit 72h")
+
         time.sleep(0.5)
 
+    rivers.insert(0, csv_header)
     return rivers
 
 
