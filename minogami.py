@@ -156,20 +156,19 @@ def fetch_river(rivers: list) -> list:
             river.append(str(previsions_cehq[3]))
             river.append(str(previsions_vigilance[3]))
 
-            csv_header.append("CEHQ Debit Actuel")
-            csv_header.append("Vigilance Debit Actuel")
-
-            csv_header.append("CEHQ Debit 24h")
-            csv_header.append("Vigilance Debit 24h")
-
-            csv_header.append("CEHQ Debit 48h")
-            csv_header.append("Vigilance Debit 48h")
-
-            csv_header.append("CEHQ Debit 72h")
-            csv_header.append("Vigilance Debit 72h")
-
         time.sleep(0.5)
 
+    csv_header.append("CEHQ Debit Actuel")
+    csv_header.append("Vigilance Debit Actuel")
+
+    csv_header.append("CEHQ Debit 24h")
+    csv_header.append("Vigilance Debit 24h")
+
+    csv_header.append("CEHQ Debit 48h")
+    csv_header.append("Vigilance Debit 48h")
+
+    csv_header.append("CEHQ Debit 72h")
+    csv_header.append("Vigilance Debit 72h")
     rivers.insert(0, csv_header)
     return rivers
 
