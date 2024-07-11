@@ -13,20 +13,6 @@ INDEX_STATION_VIGILANCE = 9
 CEHQ_BASE_LINK = "https://www.cehq.gouv.qc.ca/depot/suivihydro/bd/JSON/"
 VIGILANCE_BASE_LINK = "https://inedit-ro.geo.msp.gouv.qc.ca/station_details_readings_api?id=eq."
 
-credentials = {
-    "type": "service_account",
-    "project_id": str(os.environ['PROJECT_ID']),
-    "private_key_id": str(os.environ['PRIVATE_KEY_ID']),
-    "private_key": str(os.environ['PRIVATE_KEY']).replace('\\n', '\n'),
-    "client_email": str(os.environ['CLIENT_EMAIL']),
-    "client_id": str(os.environ['CLIENT_ID']),
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": str(os.environ['CLIENT_X509_CERT_URL']),
-    "universe_domain": "googleapis.com"
-}
-
 csv_header = []
 
 
@@ -83,11 +69,11 @@ def fetch_cehq(station: int) -> list:
             prevision_72h_date = get_datetime(72).strftime('%Y-%m-%d 09:00:00')
 
             prevision_24h = next((item for item in prevision if item['datePrevision'] == prevision_24h_date), None)
-            prevision_24h = prevision_24h['qMCS']
+            prevision_24h = prevision_24h['qMCS'] if prevision_24h is not None else 0
             prevision_48h = next((item for item in prevision if item['datePrevision'] == prevision_48h_date), None)
-            prevision_48h = prevision_48h['qMCS']
+            prevision_48h = prevision_48h['qMCS'] if prevision_48h is not None else 0
             prevision_72h = next((item for item in prevision if item['datePrevision'] == prevision_72h_date), None)
-            prevision_72h = prevision_72h['qMCS']
+            prevision_72h = prevision_72h['qMCS'] if prevision_72h is not None else 0
 
             return [debit_actuel, prevision_24h, prevision_48h, prevision_72h]
 
@@ -119,12 +105,12 @@ def fetch_vigilance(station: int) -> list:
 
             debit_prevision_list = sorted(debit_prevision_list, key=lambda x: x['date_prise_valeur'])
 
-            prevision_24h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(24).strftime('%Y-%m-%d 10:00:00')), None)
-            prevision_24h = prevision_24h['valeur']
-            prevision_48h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(48).strftime('%Y-%m-%d 10:00:00')), None)
-            prevision_48h = prevision_48h['valeur']
-            prevision_72h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(72).strftime('%Y-%m-%d 10:00:00')), None)
-            prevision_72h = prevision_72h['valeur']
+            prevision_24h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(24).strftime('%Y-%m-%d 07:00:00')), None)
+            prevision_24h = prevision_24h['valeur'] if prevision_24h is not None else 0
+            prevision_48h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(48).strftime('%Y-%m-%d 07:00:00')), None)
+            prevision_48h = prevision_48h['valeur'] if prevision_48h is not None else 0
+            prevision_72h = next((item for item in debit_prevision_list if item['date_prise_valeur'] == get_datetime(72).strftime('%Y-%m-%d 07:00:00')), None)
+            prevision_72h = prevision_72h['valeur'] if prevision_72h is not None else 0
 
             return [debit_actuel, prevision_24h, prevision_48h, prevision_72h]
 
@@ -175,22 +161,43 @@ def fetch_river(rivers: list) -> list:
 
 def export_rivers(rivers: list):
     try:
+        credentials = {
+            "type": "service_account",
+            "project_id": str(os.environ['PROJECT_ID']),
+            "private_key_id": str(os.environ['PRIVATE_KEY_ID']),
+            "private_key": str(os.environ['PRIVATE_KEY']).replace('\\n', '\n'),
+            "client_email": str(os.environ['CLIENT_EMAIL']),
+            "client_id": str(os.environ['CLIENT_ID']),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": str(os.environ['CLIENT_X509_CERT_URL']),
+            "universe_domain": "googleapis.com"
+        }
+
         gc = gspread.service_account_from_dict(credentials)
         # gc = gspread.service_account(filename='credentials.json')
         sh = gc.create(get_datetime(0).strftime('%Y-%m-%d'), folder_id=str(os.environ['FOLDER_ID']))
 
         worksheet = sh.sheet1
         worksheet.update(rivers)
-        pass
+        return worksheet
     except Exception as e:
         print("Error in export_rivers: " + str(e))
         pass
 
 
+def format_cell_color(worksheet):
+    # Format the cells in red where the value is over the maximum 'debit' threshold
+    # WIP
+    pass
+
+
 def main():
     rivers = read_rivers()
     rivers = fetch_river(rivers)
-    export_rivers(rivers)
+    worksheet = export_rivers(rivers)
+    format_cell_color(worksheet)
     print(rivers)
 
 
