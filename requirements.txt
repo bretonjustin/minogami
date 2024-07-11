@@ -1,3 +1,4 @@
 requests
 pytz
 gspread
+gspread_formatting
