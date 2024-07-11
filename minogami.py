@@ -224,8 +224,9 @@ def validate_debit_river(debit: str, threshold_min: str, threshold_max: str, row
             backgroundColor=Color(1.0, 0.0, 0.0)
         )
 
-        if (debit_float < threshold_min_float or
-                (debit_float >= threshold_max_float != 0)):
+        if ((debit_float <= threshold_min_float != 0) or 
+                (debit_float >= threshold_max_float != 0) or
+                debit_float == 0):
             # convert row and col to A1 notation
             col = get_column_letter(col_index + 1)
             row = str(row_index + 1)
