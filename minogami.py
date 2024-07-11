@@ -6,9 +6,26 @@ import requests
 from datetime import datetime, timedelta
 import pytz
 import gspread
+from gspread import Worksheet, Cell
+from gspread_formatting import *
 
 INDEX_STATION_CEHQ = 7
 INDEX_STATION_VIGILANCE = 9
+
+INDEX_THRESHOLD_MIN = 4
+INDEX_THRESHOLD_MAX = 5
+
+INDEX_DEBIT_ACTUEL_CEHQ = 12
+INDEX_DEBIT_ACTUEL_VIGILANCE = 13
+
+INDEX_DEBIT_24H_CEHQ = 14
+INDEX_DEBIT_24H_VIGILANCE = 15
+
+INDEX_DEBIT_48H_CEHQ = 16
+INDEX_DEBIT_48H_VIGILANCE = 17
+
+INDEX_DEBIT_72H_CEHQ = 18
+INDEX_DEBIT_72H_VIGILANCE = 19
 
 CEHQ_BASE_LINK = "https://www.cehq.gouv.qc.ca/depot/suivihydro/bd/JSON/"
 VIGILANCE_BASE_LINK = "https://inedit-ro.geo.msp.gouv.qc.ca/station_details_readings_api?id=eq."
@@ -181,23 +198,76 @@ def export_rivers(rivers: list):
 
         worksheet = sh.sheet1
         worksheet.update(rivers)
-        return worksheet
+
+        format_cell_color(worksheet)
     except Exception as e:
         print("Error in export_rivers: " + str(e))
         pass
 
 
-def format_cell_color(worksheet):
-    # Format the cells in red where the value is over the maximum 'debit' threshold
-    # WIP
-    pass
+def set_cell_color(cells: list[Cell], row: int, col: int, color: tuple):
+    for cell in cells:
+        if cell.row == row and cell.col == col:
+            cell.color = color
+
+
+def convert_list_of_dict_to_list_of_list(list_of_dict: list[dict]) -> list[list]:
+
+def format_cell_color(worksheet: Worksheet):
+    cells_dict = worksheet.get_all_records()
+    cells_values = list(cells_dict.values())
+    cells_keys = list(cells_dict)
+
+    cell_format_list = []
+
+    fmt = CellFormat(
+        backgroundColor=Color(1, 0.0, 0.0)
+    )
+
+    for index_row, row in enumerate(cells_values):
+        if row[INDEX_DEBIT_ACTUEL_CEHQ] <= row[INDEX_THRESHOLD_MIN]:
+            cell_format_list.append((cells_keys[index_row][INDEX_DEBIT_ACTUEL_CEHQ], fmt))
+        if row[INDEX_DEBIT_ACTUEL_CEHQ] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_ACTUEL_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_ACTUEL_VIGILANCE] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_ACTUEL_VIGILANCE, red_color_rgb)
+        if row[INDEX_DEBIT_ACTUEL_VIGILANCE] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_ACTUEL_VIGILANCE, red_color_rgb)
+
+        if row[INDEX_DEBIT_24H_CEHQ] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_24H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_24H_CEHQ] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_24H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_24H_VIGILANCE] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_24H_VIGILANCE, red_color_rgb)
+        if row[INDEX_DEBIT_24H_VIGILANCE] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_24H_VIGILANCE, red_color_rgb)
+
+        if row[INDEX_DEBIT_48H_CEHQ] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_48H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_48H_CEHQ] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_48H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_48H_VIGILANCE] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_48H_VIGILANCE, red_color_rgb)
+        if row[INDEX_DEBIT_48H_VIGILANCE] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_48H_VIGILANCE, red_color_rgb)
+
+        if row[INDEX_DEBIT_72H_CEHQ] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_72H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_72H_CEHQ] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_72H_CEHQ, red_color_rgb)
+        if row[INDEX_DEBIT_72H_VIGILANCE] <= row[INDEX_THRESHOLD_MIN]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_72H_VIGILANCE, red_color_rgb)
+        if row[INDEX_DEBIT_72H_VIGILANCE] >= row[INDEX_THRESHOLD_MAX]:
+            set_cell_color(cells, row_index, INDEX_DEBIT_72H_VIGILANCE, red_color_rgb)
+
+    worksheet.format(cells)
 
 
 def main():
     rivers = read_rivers()
     rivers = fetch_river(rivers)
-    worksheet = export_rivers(rivers)
-    format_cell_color(worksheet)
+    export_rivers(rivers)
     print(rivers)
 
 
