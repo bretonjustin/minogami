@@ -6,7 +6,7 @@ import requests
 from datetime import datetime, timedelta
 import pytz
 import gspread
-from gspread import Worksheet, Cell
+from gspread import Worksheet
 from gspread_formatting import *
 
 INDEX_STATION_CEHQ = 7
@@ -79,7 +79,7 @@ def fetch_cehq(station: int) -> list:
 
             prevision = sorted(prevision, key=lambda x: x['datePrevision'], reverse=True)
 
-            debit_actuel = diffusion[0]['donnee']
+            debit_actuel = diffusion[0]['donnee'] if diffusion is not None else 0
 
             prevision_24h_date = get_datetime(24).strftime('%Y-%m-%d 09:00:00')
             prevision_48h_date = get_datetime(48).strftime('%Y-%m-%d 09:00:00')
@@ -110,7 +110,7 @@ def fetch_vigilance(station: int) -> list:
 
             debit_actuel_list = data['valeurs_deb']
             debit_actuel_list = sorted(debit_actuel_list, key=lambda x: x['date_prise_valeur'], reverse=True)
-            debit_actuel = debit_actuel_list[0]['valeur']
+            debit_actuel = debit_actuel_list[0]['valeur'] if debit_actuel_list is not None else 0
 
             debit_prevision_list = data['valeurs_deb_prev']
             # convert each datetime to America/Montreal timezone
@@ -202,13 +202,9 @@ def export_rivers(rivers: list):
         format_cell_color(rivers, worksheet)
     except Exception as e:
         print("Error in export_rivers: " + str(e))
-        pass
+        # exit with error code
+        exit(1)
 
-
-def set_cell_color(cells: list[Cell], row: int, col: int, color: tuple):
-    for cell in cells:
-        if cell.row == row and cell.col == col:
-            cell.color = color
 
 def get_column_letter(n: int) -> str:
     result = ""
@@ -219,37 +215,53 @@ def get_column_letter(n: int) -> str:
 
 
 def validate_debit_river(debit: str, threshold_min: str, threshold_max: str, row_index: int, col_index: int):
-    debit_float = float(debit)
-    threshold_min_float = float(threshold_min)
-    threshold_max_float = float(threshold_max)
+    try:
+        debit_float = float(debit)
+        threshold_min_float = float(threshold_min)
+        threshold_max_float = float(threshold_max)
 
-    fmt = CellFormat(
-        backgroundColor=Color(1.0, 0.0, 0.0)
-    )
+        fmt = CellFormat(
+            backgroundColor=Color(1.0, 0.0, 0.0)
+        )
 
-    if debit_float < threshold_min_float or debit_float > threshold_max_float:
-        # convert row and col to A1 notation
-        col = get_column_letter(col_index + 1)
-        row = str(row_index + 1)
-        a1_notation = col + row
-        return (a1_notation , fmt)
+        if (debit_float < threshold_min_float or
+                (debit_float >= threshold_max_float != 0)):
+            # convert row and col to A1 notation
+            col = get_column_letter(col_index + 1)
+            row = str(row_index + 1)
+            a1_notation = col + row
+            return a1_notation, fmt
 
-    return ()
+        return None
+
+    except Exception as e:
+        print("Error in validate_debit_river: " + str(e))
+        return None
 
 
 def format_cell_color(rivers: list, worksheet: Worksheet):
-    format_list = []
-    for row_index, river in enumerate(rivers):
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_ACTUEL_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_ACTUEL_CEHQ))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_ACTUEL_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_ACTUEL_VIGILANCE))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_24H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_24H_CEHQ))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_24H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_24H_VIGILANCE))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_48H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_48H_CEHQ))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_48H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_48H_VIGILANCE))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_72H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_72H_CEHQ))
-        format_list.append(validate_debit_river(river[INDEX_DEBIT_72H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_72H_VIGILANCE))
+    try:
+        format_list = []
+        for row_index, river in enumerate(rivers):
+            if row_index == 0:
+                continue
 
-    format_cell_ranges(worksheet, format_list)
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_ACTUEL_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_ACTUEL_CEHQ))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_ACTUEL_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_ACTUEL_VIGILANCE))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_24H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_24H_CEHQ))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_24H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_24H_VIGILANCE))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_48H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_48H_CEHQ))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_48H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_48H_VIGILANCE))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_72H_CEHQ], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_72H_CEHQ))
+            format_list.append(validate_debit_river(river[INDEX_DEBIT_72H_VIGILANCE], river[INDEX_THRESHOLD_MIN], river[INDEX_THRESHOLD_MAX], row_index, INDEX_DEBIT_72H_VIGILANCE))
+
+        # remove all None values
+        format_list = [x for x in format_list if x is not None]
+        format_cell_ranges(worksheet, format_list)
+
+    except Exception as e:
+        print("Error in format_cell_color: " + str(e))
+        pass
 
 
 def main():
