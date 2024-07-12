@@ -79,7 +79,7 @@ def fetch_cehq(station: int) -> list:
 
             prevision = sorted(prevision, key=lambda x: x['datePrevision'], reverse=True)
 
-            debit_actuel = diffusion[0]['donnee'] if diffusion is not None else 0
+            debit_actuel = diffusion[0]['donnee'] if diffusion[0]['donnee'] is not None else 0
 
             prevision_24h_date = get_datetime(24).strftime('%Y-%m-%d 09:00:00')
             prevision_48h_date = get_datetime(48).strftime('%Y-%m-%d 09:00:00')
