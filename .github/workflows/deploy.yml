@@ -34,3 +34,11 @@ jobs:
 
     - name: Run Python Script to export daily report
       run: python -u minogami.py
+
+  keepalive-job:
+    name: Keepalive Workflow
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1.2.1
