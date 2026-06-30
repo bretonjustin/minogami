@@ -1,4 +1,4 @@
-Groupe,Expédition,Station Hydrologique,Météo,Débit minimum (m³/s),Débit maximum (m³/s),Pondération,Station CEHQ,Lien CEHQ,Station Vigilance,Lien Vigilance,Processus décisionel
+Groupe,Expédition,Station Hydrologique,Météo,Débit min (m³/s),Débit max (m³/s),Pondération,Station CEHQ,Lien CEHQ,Station Vigilance,Lien Vigilance,Processus décisionel
 Tournesol & Commando,Basse-Batiscan,Batiscan,https://meteo.gc.ca/city/pages/qc-154_metric_f.html,30,150,1,50304,https://www.cehq.gouv.qc.ca/suivihydro/graphique.asp?NoStation=050304,206,https://vigilance.geo.msp.gouv.qc.ca/stations/206,
 Tournesol & Commando,St-Anne,St-Anne,https://meteo.gc.ca/city/pages/qc-133_metric_f.html,22,175,1,50408,https://www.cehq.gouv.qc.ca/suivihydro/graphique.asp?NoStation=050408 ,365,https://vigilance.geo.msp.gouv.qc.ca/stations/365 ,
 Radisson & Amazone 2 ,Haute-Batiscan,Batiscan,https://meteo.gc.ca/city/pages/qc-133_metric_f.html,33,120,0.64,50304,https://www.cehq.gouv.qc.ca/suivihydro/graphique.asp?NoStation=050304,206,https://vigilance.geo.msp.gouv.qc.ca/stations/206,
