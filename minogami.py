@@ -221,6 +221,18 @@ def export_rivers(rivers: list):
 
         worksheet = sh.sheet1
         worksheet.update(rivers, value_input_option="USER_ENTERED")
+        worksheet.spreadsheet.batch_update({
+            "requests": [{
+                "autoResizeDimensions": {
+                    "dimensions": {
+                        "sheetId": worksheet.id,
+                        "dimension": "COLUMNS",
+                        "startIndex": 0,
+                        "endIndex": len(rivers[0])
+                    }
+                }
+            }]
+        })
 
         format_cell_color(rivers, worksheet)
     except Exception as e:
