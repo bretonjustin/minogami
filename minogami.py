@@ -11,6 +11,9 @@ from gspread_formatting import *
 
 INDEX_STATION_CEHQ = 7
 INDEX_STATION_VIGILANCE = 9
+INDEX_LINK_METEO = 3
+INDEX_LINK_CEHQ = 8
+INDEX_LINK_VIGILANCE = 10
 
 INDEX_THRESHOLD_MIN = 4
 INDEX_THRESHOLD_MAX = 5
@@ -33,9 +36,28 @@ VIGILANCE_BASE_LINK = "https://inedit.geo.msp.gouv.qc.ca/station_details_reading
 csv_header = []
 
 
+def build_hyperlink_formula(url: str, label: str) -> str:
+    url = (url or "").strip()
+    if url == "":
+        return url
+
+    safe_url = url.replace('"', '""')
+    safe_label = label.replace('"', '""')
+    return f'=HYPERLINK("{safe_url}", "{safe_label}")'
+
+
+def format_debit_value(value) -> str:
+    try:
+        if value is None or value == "":
+            return "0.0"
+        return f"{float(value):.1f}"
+    except (TypeError, ValueError):
+        return "0.0"
+
+
 def read_rivers() -> list:
     rivers = []
-    with open('rivers.csv', 'r', encoding="ISO-8859-1") as csvfile:
+    with open('rivers.csv', 'r', encoding="utf-8-sig") as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
             rivers.append(row)
@@ -45,6 +67,11 @@ def read_rivers() -> list:
 
     # remove header
     rivers.pop(0)
+
+    for river in rivers:
+        river[INDEX_LINK_METEO] = build_hyperlink_formula(river[INDEX_LINK_METEO], "Météo")
+        river[INDEX_LINK_CEHQ] = build_hyperlink_formula(river[INDEX_LINK_CEHQ], "CEHQ")
+        river[INDEX_LINK_VIGILANCE] = build_hyperlink_formula(river[INDEX_LINK_VIGILANCE], "Vigilance")
 
     return list(rivers)
 
@@ -151,31 +178,23 @@ def fetch_river(rivers: list) -> list:
         previsions_vigilance = fetch_vigilance(station_vigilance)
 
         if previsions_cehq is not None and previsions_vigilance is not None:
-            river.append(str(previsions_cehq[0]))
-            river.append(str(previsions_vigilance[0]))
-
-            river.append(str(previsions_cehq[1]))
-            river.append(str(previsions_vigilance[1]))
-
-            river.append(str(previsions_cehq[2]))
-            river.append(str(previsions_vigilance[2]))
-
-            river.append(str(previsions_cehq[3]))
-            river.append(str(previsions_vigilance[3]))
+            for index in range(4):
+                river.append(format_debit_value(previsions_cehq[index]))
+                river.append(format_debit_value(previsions_vigilance[index]))
 
         time.sleep(0.5)
 
-    csv_header.append("CEHQ Debit Actuel")
-    csv_header.append("Vigilance Debit Actuel")
+    csv_header.append("CEHQ Débit Actuel")
+    csv_header.append("Vigilance Débit Actuel")
 
-    csv_header.append("CEHQ Debit 24h")
-    csv_header.append("Vigilance Debit 24h")
+    csv_header.append("CEHQ Débit 24h")
+    csv_header.append("Vigilance Débit 24h")
 
-    csv_header.append("CEHQ Debit 48h")
-    csv_header.append("Vigilance Debit 48h")
+    csv_header.append("CEHQ Débit 48h")
+    csv_header.append("Vigilance Débit 48h")
 
-    csv_header.append("CEHQ Debit 72h")
-    csv_header.append("Vigilance Debit 72h")
+    csv_header.append("CEHQ Débit 72h")
+    csv_header.append("Vigilance Débit 72h")
     rivers.insert(0, csv_header)
     return rivers
 
