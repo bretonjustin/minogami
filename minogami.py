@@ -220,7 +220,7 @@ def export_rivers(rivers: list):
         sh = gc.create(get_datetime(0).strftime('%Y-%m-%d'), folder_id=str(os.environ['FOLDER_ID']))
 
         worksheet = sh.sheet1
-        worksheet.update(rivers)
+        worksheet.update(rivers, value_input_option="USER_ENTERED")
 
         format_cell_color(rivers, worksheet)
     except Exception as e:
