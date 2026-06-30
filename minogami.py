@@ -28,7 +28,7 @@ INDEX_DEBIT_72H_CEHQ = 18
 INDEX_DEBIT_72H_VIGILANCE = 19
 
 CEHQ_BASE_LINK = "https://www.cehq.gouv.qc.ca/depot/suivihydro/bd/JSON/"
-VIGILANCE_BASE_LINK = "https://inedit-ro.geo.msp.gouv.qc.ca/station_details_readings_api?id=eq."
+VIGILANCE_BASE_LINK = "https://inedit.geo.msp.gouv.qc.ca/station_details_readings_api?id=eq."
 
 csv_header = []
 
